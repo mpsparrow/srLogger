@@ -10,7 +10,7 @@ import threading, time
 
 # CONFIGURATION VARIABLES
 logPath = "usageLog.txt" # path to log file ; DEFAULT: usageLog.txt
-checksBeforeLog = 20 # logging interval in seconds (s) ; DEFAULT: 20
+checksBeforeLog = 10 # logging interval in seconds (s) ; DEFAULT: 20
 checkInterval = 30 # checking interval in seconds (s) ; DEFAULT: 30
 
 # GLOBAL VARIABLES
@@ -41,7 +41,7 @@ def getStorage(): # storage
 
 def logger(cpu, storage, swap, virtual): # logs data
     global logPath
-    content = f"[[{round(min(cpu))},{round(max(cpu))},{round(sum(cpu)/len(cpu))}],[{round(min(virtual))},{round(max(virtual))},{round(sum(virtual)/len(virtual))}],[{round(min(swap))},{round(max(swap))},{round(sum(swap)/len(swap))}],[{round(sum(storage)/len(storage))}],[{datetime.datetime.now().strftime('%d.%m.%Y %H:%M:%S')}]]\n"
+    content = f"[[{round(min(cpu))},{round(max(cpu))},{round(sum(cpu)/len(cpu))}],[{round(min(virtual))},{round(max(virtual))},{round(sum(virtual)/len(virtual))}],[{round(min(swap))},{round(max(swap))},{round(sum(swap)/len(swap))}],[{round(sum(storage)/len(storage))}],[{datetime.datetime.now().strftime('%d.%m.%Y')},{datetime.datetime.now().strftime('%H:%M:%S')}]]\n"
     output = open(logPath,'a+')
     output.write(content)
     output.close()
