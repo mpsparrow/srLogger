@@ -70,7 +70,7 @@ def startThreads():
         if x >= checksBeforeLog:
             logger(cpuL, storageL, swapL, virtualL)
             compileInfo(True)
-            x = 0
+            x = 0  
         else:
             compileInfo()
             x += 1
