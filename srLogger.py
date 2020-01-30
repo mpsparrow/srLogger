@@ -80,7 +80,7 @@ class Usage:
             self.storageL.append(self.getStoragePercent)
 
     def logger(self):
-        content = f"[[{self.getCPUusage()}],[{self.getDate()},{self.getTime()}]]\n"
+        content = f"[[{self.getCPUpercentAvg()}],[{self.getSMemoryPercentAvg()}],[{self.getDate()},{self.getTime()}]]\n"
         output = open(self.path,'a+')
         output.write(content)
         output.close()
