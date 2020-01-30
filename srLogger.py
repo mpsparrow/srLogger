@@ -1,78 +1,100 @@
 '''
-NAME: Server Resource LOgger
-VERSION: 0.1v
-LAST UPDATED: January 25, 2020
+NAME: srLogger (Server Resource Logger)
+VERSION: 0.2v
+LAST UPDATED: January 30, 2020
 CREATED BY: Matthew
 '''
 import psutil
 import datetime
 import threading, time
 
-# CONFIGURATION VARIABLES
-logPath = "usageLog.txt" # path to log file ; DEFAULT: usageLog.txt
-checksBeforeLog = 10 # logging interval in seconds (s) ; DEFAULT: 20
-checkInterval = 30 # checking interval in seconds (s) ; DEFAULT: 30
+class Usage:
+    def __init__(self, path, checks, intervals):
+        self.path = path
+        self.checks = checks
+        self.intervals = intervals
+        self.x = 0
+        self.cpuL = []
+        self.vmemoryL = []
+        self.smemoryL = []
+        self.storageL = []
 
-# GLOBAL VARIABLES
-x = 0 # interval counter
-cpuL = []
-storageL = []
-virtualL = []
-swapL = []
+    def getCoreCount(self):
+        return psutil.cpu_count()
 
-def getCPU(): # CPU
-    '''() -> [total usage, per core usage, core count, logical core count]'''
-    return [psutil.cpu_percent(interval=1), psutil.cpu_percent(interval=1, percpu=True), psutil.cpu_count(), psutil.cpu_count(logical=False)]
+    def getCoreCountLogical(self):
+        return psutil.cpu_count(logical=False)
 
-def getVirtualMemory(): # virtual memory
-    '''() -> [total memory in (GB), memory usage]'''
-    VirtualMem = psutil.virtual_memory()
-    return [VirtualMem.total / (1024.0 ** 3), VirtualMem.percent]
+    def getCPUpercentCore(self):
+        return psutil.cpu_percent(interval=1, percpu=True)
 
-def getSwapMemory(): # swap memory
-    '''() -> [total swap memory (GB), memory usage]'''
-    SwapMem = psutil.swap_memory()
-    return [SwapMem.total / (1024.0 ** 3), SwapMem.percent]
+    def getCPUpercent(self):
+        return psutil.cpu_percent(interval=1)
 
-def getStorage(): # storage
-    '''() -> [total storage (GB), percent used]'''
-    diskUsage = psutil.disk_usage("/")
-    return [diskUsage.total / (1024.0 ** 3), diskUsage.percent]
+    def getCPUpercentAvg(self):
+        return round(sum(self.cpuL)/len(self.cpuL), 1)
 
-def logger(cpu, storage, swap, virtual): # logs data
-    global logPath
-    content = f"[[{round(min(cpu))},{round(max(cpu))},{round(sum(cpu)/len(cpu))}],[{round(min(virtual))},{round(max(virtual))},{round(sum(virtual)/len(virtual))}],[{round(min(swap))},{round(max(swap))},{round(sum(swap)/len(swap))}],[{round(sum(storage)/len(storage))}],[{datetime.datetime.now().strftime('%d.%m.%Y')},{datetime.datetime.now().strftime('%H:%M:%S')}]]\n"
-    output = open(logPath,'a+')
-    output.write(content)
-    output.close()
+    def getVMemoryAmount(self):
+        return VirtualMem.total / (1024.0 ** 3)
 
-def compileInfo(wipe=False): # compiles recent data
-    global cpuL
-    global storageL
-    global virtualL
-    global swapL
-    if wipe == True:
-        cpuL = []
-        storageL = []
-        virtualL = []
-        swapL = []
-    else:
-        cpuL.append(getCPU()[0])
-        storageL.append(getStorage()[1])
-        virtualL.append(getVirtualMemory()[1])
-        swapL.append(getSwapMemory()[1])
+    def getVMemoryPercent(self):
+        return VirtualMem.percent
 
-# cycles through compiling and logging data
-def startThreads():
-    checkEvent = threading.Event()
-    while not checkEvent.wait(checkInterval):
-        global x
-        if x >= checksBeforeLog:
-            logger(cpuL, storageL, swapL, virtualL)
-            compileInfo(True)
-            x = 0  
+    def getVMemoryPercentAvg(self):
+        return round(sum(self.vmemoryL)/len(self.vmemoryL), 1)
+
+    def getSMemoryAmount(self):
+        return SwapMem.total / (1024.0 ** 3)
+
+    def getSMemoryPercent(self):
+        return SwapMem.percent
+
+    def getSMemoryPercentAvg(self):
+        return round(sum(self.smemoryL)/len(self.smemoryL), 1)
+
+    def getStorageAmount(self):
+        return diskUsage.total / (1024.0 ** 3)
+
+    def getStoragePercent(self):
+        return diskUsage.percent
+
+    def getStoragePercentAvg(self):
+        return round(sum(self.storageL)/len(self.storageL), 1)
+
+    def getDate(self):
+        return datetime.datetime.now().strftime('%d.%m.%Y')
+    
+    def getTime(self):
+        return datetime.datetime.now().strftime('%H:%M:%S')
+
+    def compileInfo(self, wipe=False):
+        if wipe == True:
+            self.cpuL = []
+            self.vmemoryL = []
+            self.smemoryL = []
+            self.storageL = []
         else:
-            compileInfo()
-            x += 1
+            self.cpuL.append(self.getCPUpercent())
+            self.vmemoryL.append(self.getVMemoryPercent)
+            self.smemoryL.append(self.getSMemoryPercent)
+            self.storageL.append(self.getStoragePercent)
 
-startThreads() # starts the program
+    def logger(self):
+        content = f"[[{self.getCPUusage()}],[{self.getDate()},{self.getTime()}]]\n"
+        output = open(self.path,'a+')
+        output.write(content)
+        output.close()
+
+    def thread(self):
+        checkEvent = threading.Event()
+        while not checkEvent.wait(self.intervals):
+            if self.x >= self.checks:
+                self.logger()
+                self.compileInfo(True)
+                self.x = 0  
+            else:
+                self.compileInfo()
+                self.x += 1
+
+task1 = Usage("usageLog.txt", 10, 30)
+task1.thread()
