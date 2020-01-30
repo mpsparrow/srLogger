@@ -127,7 +127,7 @@ class Usage:
 
     def logger(self):
         value = (self.getDate(), self.getTime())
-        value += (self.getCPUpercentAvg(), self.getCPUmin(), self.getCPUmin())
+        value += (self.getCPUpercentAvg(), self.getCPUmin(), self.getCPUmax())
         value += (self.getVMemoryPercentAvg(), self.getVMemoryMin(), self.getVMemoryMax())
         value += (self.getSMemoryPercentAvg(), self.getSMemoryMin(), self.getSMemoryMax())
         value += (self.getStoragePercent(), self.getStorageAmount())
