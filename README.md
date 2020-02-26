@@ -1,2 +1,2 @@
 # srLogger
-srLogger logs system resource usage using a simple python script. Requires threading, datetime, and psutil. Runs on python 3.4+
+A simple python script which logs resource usage in a mySQL database. Requires Python 3.4+
